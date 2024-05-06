@@ -20,11 +20,9 @@ A seguir está uma lista dos componentes eletrônicos usados no projeto
 - Botões
 - Jumpers/Fios
 
-## Diagrama do Elétrico
+## Diagrama do Hardware
 
-Acesse o link a seguir para vizualizar o diagrama elétrico do projeto
-
-- [Diagrama Elétrico](https://drive.google.com/file/d/1RR97ndK4_J0jYaR1u_4Oibj73QSnDJto/view?usp=sharing)
+![Diagrama do Hardware](sprints/diagramaSprint2.png)
 
 ## Créditos
 
