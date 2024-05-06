@@ -13,8 +13,8 @@ A seguir está uma lista dos componentes eletrônicos usados no projeto
 
 - Microcontrolador ESP32
 - Módulo MP3 DFPlayer Mini
-- Cartão microSD de 4GB
-- Módulo Adaptador Plug MP3 3.5mm
+- Cartão microSD de 8GB
+- Módulo Adaptador TRRS Plug MP3 3.5mm
 - Display OLED 128x64 0.96" I2C
 - Resistores
 - Botões
