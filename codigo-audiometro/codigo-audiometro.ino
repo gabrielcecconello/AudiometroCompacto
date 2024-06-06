@@ -15,46 +15,34 @@
 
 SoftwareSerial softwareSerial(PIN_MP3_RX, PIN_MP3_TX);
 DFRobotDFPlayerMini df;
+TaskHandle_t handlePlayFrequencies;
 
-void taskPlayLeftFrequencies(void* pvParameters) {
-  pinMode(BUSY_PIN, INPUT);
+bool perdaAuditiva;
+
+void taskPlayFrequencies(void* pvParameters) {
+  uint8_t currentTrack = 1;
 
   if(df.begin(softwareSerial)) {
     Serial.println("Connected!");
-    df.playFolder(1, 1);
     df.volume(0);
+    df.play(1);
+    Serial.print("Playing Track ");
+    Serial.println(currentTrack);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
     for(;;) {
       if(digitalRead(BUSY_PIN) == HIGH) {
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
+        if(df.readVolume() <= 4) perdaAuditiva = 0;
+        else perdaAuditiva = 1;
         df.volume(0);
+        currentTrack += 1;
+        if (currentTrack == df.readFileCounts() + 1) vTaskDelete(handlePlayFrequencies);
         df.next();
-        df.play();
+        Serial.print("Playing Track ");
+        Serial.println(currentTrack);
       }
       df.volumeUp();
+      Serial.println(df.readVolume());
       vTaskDelay(2000 / portTICK_PERIOD_MS);
-    }
-  }
-  else {
-    Serial.println("Connection to DFPlayer Mini failed!");
-  }
-}
-
-void taskPlayRightFrequencies(void* pvParameters) {
-  pinMode(BUSY_PIN, INPUT);
-
-  if(df.begin(softwareSerial)) {
-    Serial.println("Connected!");
-    df.playFolder(2, 1);
-    df.volume(0);
-    for(;;) {
-      if(digitalRead(BUSY_PIN) == HIGH) {
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
-        df.volume(0);
-        df.next();
-        df.play();
-      }
-      df.volumeUp();
-      vTaskDelay(2000 / portTick_PERIOD_MS);
     }
   }
   else {
@@ -65,6 +53,9 @@ void taskPlayRightFrequencies(void* pvParameters) {
 void setup() {
   Serial.begin(9600);
   softwareSerial.begin(9600);
+  
+  pinMode(BUSY_PIN, INPUT);
+  xTaskCreatePinnedToCore(taskPlayFrequencies, "Play Frequencies", 2048, NULL, 1, &handlePlayFrequencies, 0);
 
 }
 
