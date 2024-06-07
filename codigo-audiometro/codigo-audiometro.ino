@@ -35,14 +35,17 @@ void taskPlayFrequencies(void* pvParameters) {
         else perdaAuditiva = 1;
         df.volume(0);
         currentTrack += 1;
-        if (currentTrack == df.readFileCounts() + 1) vTaskDelete(handlePlayFrequencies);
+        if (currentTrack > 6) {
+          Serial.println("Finished Frequencies.");
+          vTaskDelete(handlePlayFrequencies);
+        }
         df.next();
         Serial.print("Playing Track ");
         Serial.println(currentTrack);
       }
       df.volumeUp();
       Serial.println(df.readVolume());
-      vTaskDelay(2000 / portTICK_PERIOD_MS);
+      vTaskDelay(1500 / portTICK_PERIOD_MS);
     }
   }
   else {
