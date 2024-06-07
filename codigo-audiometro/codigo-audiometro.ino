@@ -13,6 +13,14 @@
 #define BUSY_PIN 5
 #endif
 
+#ifndef TRANSISTOR_R
+#define TRANSISTOR_R 18
+#endif
+
+#ifndef TRANSISTOR_L
+#define TRANSISTOR_L 19
+#endif
+
 SoftwareSerial softwareSerial(PIN_MP3_RX, PIN_MP3_TX);
 DFRobotDFPlayerMini df;
 TaskHandle_t handlePlayFrequencies;
@@ -21,6 +29,9 @@ bool perdaAuditiva;
 
 void taskPlayFrequencies(void* pvParameters) {
   uint8_t currentTrack = 1;
+  uint8_t transistor = *((uint8_t*) pvParameters);
+
+  digitalWrite(transistor, HIGH); // IDEIA AINDA A SER DESENVOLVIDA !!
 
   if(df.begin(softwareSerial)) {
     Serial.println("Connected!");
@@ -58,7 +69,9 @@ void setup() {
   softwareSerial.begin(9600);
   
   pinMode(BUSY_PIN, INPUT);
-  xTaskCreatePinnedToCore(taskPlayFrequencies, "Play Frequencies", 2048, NULL, 1, &handlePlayFrequencies, 0);
+  pinMode(TRANSISTOR_R, INPUT);
+  pinMode(TRANSISTOR_L, INPUT);
+  xTaskCreatePinnedToCore(taskPlayFrequencies, "Play Frequencies", 2048, (void*) TRANSISTOR_R, 1, &handlePlayFrequencies, 0);
 
 }
 
