@@ -31,14 +31,14 @@ void task_button_green(void *pvParameters) {
       
       } else if(display_interface == 2) {
         if(display_opcao_selecionada < display_limite_opcao) {
-            display_opcao_selecionada ++;
+          display_opcao_selecionada ++;
         } else {
-            display_interface = 3;
-            display_opcao_selecionada = 0;
+          display_interface = 3;
         }
       
       } else if (display_interface == 3) {
         display_interface = 0;
+        display_opcao_selecionada = 0;
       }
 
     } else if(button_state == LOW && is_button_press) {
@@ -73,6 +73,10 @@ void task_button_white(void *pvParameters) {
           display_interface = 0;
           display_opcao_selecionada = 0;
         }
+        
+      } else if (display_interface == 3) {
+        display_interface = 0;
+        display_opcao_selecionada = 0;
       }
 
     } else if(button_state == LOW && is_button_press) {
