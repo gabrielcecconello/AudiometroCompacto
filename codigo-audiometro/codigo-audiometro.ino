@@ -21,9 +21,9 @@
 #define SELECT_PIN 19
 #endif
 
-SoftwareSerial softwareSerial(PIN_MP3_RX, PIN_MP3_TX);
 DFRobotDFPlayerMini df;
 TaskHandle_t handlePlayFrequencies;
+SoftwareSerial softwareSerial(PIN_MP3_RX, PIN_MP3_TX);
 
 bool perdaAuditiva;
 bool isButtonPressed;
@@ -32,6 +32,8 @@ void taskButtonState(void* pvParameters) {
   int buttonState;
   bool is_button_press = false;
   isButtonPressed = false;
+
+  pinMode(CONFIRM_PIN, INPUT);
 
   for(;;) {
     buttonState = digitalRead(CONFIRM_PIN);
@@ -50,7 +52,10 @@ void taskPlayFrequencies(void* pvParameters) {
   int time_flag2;
   int time_now;
 
-  if(df.begin(softwareSerial)) {
+  pinMode(SELECT_PIN, INPUT);
+  pinMode(BUSY_PIN, INPUT);
+  
+  if(df.begin(softwareSerial)) {  
     Serial.println("Connected!");
     df.volume(0);
     df.play(1);
@@ -94,7 +99,7 @@ void taskPlayFrequencies(void* pvParameters) {
         time_flag2 = millis();
       }
 
-      // vTaskDelay(100 / portTICK_PERIOD_MS);
+      vTaskDelay(100 / portTICK_PERIOD_MS);
     }
   }
   else {
@@ -106,14 +111,8 @@ void setup() {
   Serial.begin(9600);
   softwareSerial.begin(9600);
   
-  pinMode(BUSY_PIN, INPUT);
-  pinMode(CONFIRM_PIN, INPUT);
-  pinMode(SELECT_PIN, INPUT);
-
   xTaskCreatePinnedToCore(taskPlayFrequencies, "Play Frequencies", 2048, NULL, 1, &handlePlayFrequencies, 0);
   xTaskCreatePinnedToCore(taskButtonState, "Check Button State", 2048, NULL, 1, NULL, 1);
 }
 
-void loop() {
-
-}
+void loop() {}
