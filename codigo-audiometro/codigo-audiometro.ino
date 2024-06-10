@@ -13,25 +13,36 @@
 #define BUSY_PIN 5
 #endif
 
-#ifndef TRANSISTOR_R
-#define TRANSISTOR_R 18
+#ifndef CONFIRM_PIN
+#define CONFIRM_PIN 18
 #endif
 
-#ifndef TRANSISTOR_L
-#define TRANSISTOR_L 19
+#ifndef SELECT_PIN
+#define SELECT_PIN 19
 #endif
 
 SoftwareSerial softwareSerial(PIN_MP3_RX, PIN_MP3_TX);
 DFRobotDFPlayerMini df;
 TaskHandle_t handlePlayFrequencies;
 
-bool perdaAuditiva;
+int buttonState = 0;
+bool perdaAuditiva = 0;
+bool isButtonPressed = 0;
+
+void taskButtonState(void* pvParameters) {
+  for(;;) {
+    buttonState = digitalRead(CONFIRM_PIN);
+    if(buttonState == HIGH && !isButtonPressed) {
+      isButtonPressed = 1;
+    } 
+    else if(buttonState == LOW && isButtonPressed) {
+       isButtonPressed = 0;
+    }
+  }
+}
 
 void taskPlayFrequencies(void* pvParameters) {
   uint8_t currentTrack = 1;
-  uint8_t transistor = *((uint8_t*) pvParameters);
-
-  digitalWrite(transistor, HIGH); // IDEIA AINDA A SER DESENVOLVIDA !!
 
   if(df.begin(softwareSerial)) {
     Serial.println("Connected!");
@@ -39,24 +50,24 @@ void taskPlayFrequencies(void* pvParameters) {
     df.play(1);
     Serial.print("Playing Track ");
     Serial.println(currentTrack);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
     for(;;) {
-      if(digitalRead(BUSY_PIN) == HIGH) {
-        if(df.readVolume() <= 4) perdaAuditiva = 0;
-        else perdaAuditiva = 1;
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+      if(digitalRead(BUSY_PIN) || isButtonPressed) {
+        if(df.readVolume() > 4) perdaAuditiva = 1;
         df.volume(0);
         currentTrack += 1;
         if (currentTrack > 6) {
           Serial.println("Finished Frequencies.");
+          if (perdaAuditiva) Serial.println("Unfortunately, you have some kind of hearing loss."); 
+          else Serial.println("You're hearing is all good!");
           vTaskDelete(handlePlayFrequencies);
         }
         df.next();
         Serial.print("Playing Track ");
         Serial.println(currentTrack);
       }
-      df.volumeUp();
+      if (!isButtonPressed) df.volumeUp();
       Serial.println(df.readVolume());
-      vTaskDelay(1500 / portTICK_PERIOD_MS);
     }
   }
   else {
@@ -69,13 +80,13 @@ void setup() {
   softwareSerial.begin(9600);
   
   pinMode(BUSY_PIN, INPUT);
-  pinMode(TRANSISTOR_R, INPUT);
-  pinMode(TRANSISTOR_L, INPUT);
-  xTaskCreatePinnedToCore(taskPlayFrequencies, "Play Frequencies", 2048, (void*) TRANSISTOR_R, 1, &handlePlayFrequencies, 0);
+  pinMode(CONFIRM_PIN, INPUT);
+  pinMode(SELECT_PIN, INPUT);
 
+  xTaskCreatePinnedToCore(taskPlayFrequencies, "Play Frequencies", 2048, NULL, 1, &handlePlayFrequencies, 0);
+  xTaskCreatePinnedToCore(taskButtonState, "Check Button State", 2048, NULL, 1, NULL, 1);
 }
 
 void loop() {
-
 
 }
