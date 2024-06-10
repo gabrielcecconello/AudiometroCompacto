@@ -7,11 +7,12 @@
 int display_opcao_selecionada;
 int display_limite_opcao;
 int display_interface;
+bool perda = false;
 
 Adafruit_SSD1306 display(-1);
 
 void exibir_ajuda() {
-  display_limite_opcao = 3;
+  display_limite_opcao = 2;
 
   // Exibe o titulo
   display.setTextSize(1);
@@ -26,11 +27,8 @@ void exibir_ajuda() {
   } else if(display_opcao_selecionada == 1) {
     display.println();
     display.println("Pressione B para\nnavegar ou voltar");
-  } else if(display_opcao_selecionada == 2) {
-    display.println("Para iniciar o teste,selecione qual orelhadeseja testar");
-  } else if(display_opcao_selecionada >= 3) {
-    display.println();
-    display.println("E quando escutar um\nsom, pressione A");
+  } else if(display_opcao_selecionada >= 2) {
+    display.println("Durante o teste,\nquando escutar um sompressione A");
   }
 }
 
@@ -92,9 +90,13 @@ void exibir_frequencia() {
 void exibir_resultado_teste() {
   display.setTextSize(1);
   display.setCursor(0, 0);
-  display.setTextColor(BLACK, WHITE);
-  display.println(" *  Resultado  * ");
-  display.println();
+  display.setTextColor(WHITE, BLACK);
+  
+  if(perda) {
+    display.println("Voce possui uma perdaauditiva\n\nProcure um medico");
+  } else {
+    display.println("Voce nao possui perdaauditiva\n\nTudo certo");
+  }
 }
 
 void task_display(void *pvParameters) {
