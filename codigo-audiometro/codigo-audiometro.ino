@@ -64,7 +64,7 @@ void taskPlayFrequencies(void* pvParameters) {
       time_now = millis();
 
       //TODO: ajustar tempo de duracao de cada som
-      if(time_now - time_flag1 > 5000 || isButtonPressed) {
+      if(time_now - time_flag1 > 9000 || isButtonPressed) {
         if(df.readVolume() > 4 && !isButtonPressed) perdaAuditiva = true;
 
         // Toca o proximo audio
@@ -82,7 +82,7 @@ void taskPlayFrequencies(void* pvParameters) {
 
         // Proxima frequencia
         df.next();
-        time_flag1 = millis()
+        time_flag1 = millis();
         Serial.print("Playing Track: ");
         Serial.println(currentTrack);
       }
