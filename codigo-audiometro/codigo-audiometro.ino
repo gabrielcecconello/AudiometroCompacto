@@ -46,7 +46,9 @@ void taskButtonState(void* pvParameters) {
 void taskPlayFrequencies(void* pvParameters) {
   uint8_t currentTrack = 1;
   perdaAuditiva = false;
-  int time;
+  int time_flag1;
+  int time_flag2;
+  int time_now;
 
   if(df.begin(softwareSerial)) {
     Serial.println("Connected!");
@@ -55,10 +57,14 @@ void taskPlayFrequencies(void* pvParameters) {
     Serial.print("Playing Track: ");
     Serial.println(currentTrack);
 
-    time = millis();
+    time_flag1 = millis();
+    time_flag2 = millis();
 
     for(;;) {
-      if(millis() - time > 1000 || isButtonPressed) {
+      time_now = millis();
+
+      //TODO: ajustar tempo de duracao de cada som
+      if(time_now - time_flag1 > 5000 || isButtonPressed) {
         if(df.readVolume() > 4 && !isButtonPressed) perdaAuditiva = true;
 
         // Toca o proximo audio
@@ -76,13 +82,17 @@ void taskPlayFrequencies(void* pvParameters) {
 
         // Proxima frequencia
         df.next();
+        time_flag1 = millis()
         Serial.print("Playing Track: ");
         Serial.println(currentTrack);
       }
 
       // Aumenta o volume
-      if (!isButtonPressed) df.volumeUp();
-      Serial.println(df.readVolume());
+      if(time_now - time_flag2 > 1000) {
+        if (!isButtonPressed) df.volumeUp();
+        Serial.println(df.readVolume());
+        time_flag2 = millis();
+      }
 
       // vTaskDelay(100 / portTICK_PERIOD_MS);
     }
