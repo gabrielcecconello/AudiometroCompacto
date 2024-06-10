@@ -25,49 +25,66 @@ SoftwareSerial softwareSerial(PIN_MP3_RX, PIN_MP3_TX);
 DFRobotDFPlayerMini df;
 TaskHandle_t handlePlayFrequencies;
 
-int buttonState = 0;
-bool perdaAuditiva = 0;
-bool isButtonPressed = 0;
+bool perdaAuditiva;
+bool isButtonPressed;
 
 void taskButtonState(void* pvParameters) {
+  int buttonState;
+  bool is_button_press = false;
+  isButtonPressed = false;
+
   for(;;) {
     buttonState = digitalRead(CONFIRM_PIN);
-    if(buttonState == HIGH && !isButtonPressed) {
-      isButtonPressed = 1;
-    } 
-    else if(buttonState == LOW && isButtonPressed) {
-       isButtonPressed = 0;
+
+    // Verifica se o botao foi apertado
+    if(buttonState == HIGH && !is_button_press) {
+      isButtonPressed = true;
     }
   }
 }
 
 void taskPlayFrequencies(void* pvParameters) {
   uint8_t currentTrack = 1;
+  perdaAuditiva = false;
+  int time;
 
   if(df.begin(softwareSerial)) {
     Serial.println("Connected!");
     df.volume(0);
     df.play(1);
-    Serial.print("Playing Track ");
+    Serial.print("Playing Track: ");
     Serial.println(currentTrack);
+
+    time = millis();
+
     for(;;) {
-      vTaskDelay(1000 / portTICK_PERIOD_MS);
-      if(digitalRead(BUSY_PIN) || isButtonPressed) {
-        if(df.readVolume() > 4) perdaAuditiva = 1;
+      if(millis() - time > 1000 || isButtonPressed) {
+        if(df.readVolume() > 4 && !isButtonPressed) perdaAuditiva = true;
+
+        // Toca o proximo audio
         df.volume(0);
         currentTrack += 1;
+        isButtonPressed = false;
+
+        // Verifica se ha audio
         if (currentTrack > 6) {
           Serial.println("Finished Frequencies.");
           if (perdaAuditiva) Serial.println("Unfortunately, you have some kind of hearing loss."); 
           else Serial.println("You're hearing is all good!");
           vTaskDelete(handlePlayFrequencies);
         }
+
+        // Proxima frequencia
         df.next();
-        Serial.print("Playing Track ");
+        Serial.print("Playing Track: ");
         Serial.println(currentTrack);
       }
+
+      // Aumenta o volume
       if (!isButtonPressed) df.volumeUp();
       Serial.println(df.readVolume());
+
+      // vTaskDelay(100 / portTICK_PERIOD_MS);
     }
   }
   else {

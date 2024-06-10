@@ -1,5 +1,5 @@
-#define PIN_BUTTON_GREEN 19
-#define PIN_BUTTON_WHITE 5
+#define PIN_BUTTON_GREEN 5
+#define PIN_BUTTON_WHITE 19
 
 void task_button_green(void *pvParameters) {
   int button_state = 0;
@@ -19,6 +19,7 @@ void task_button_green(void *pvParameters) {
         } else if(display_opcao_selecionada == 2) {
           display_interface = 1;
           display_opcao_selecionada = 0;
+          // TODO Inicializar player
         }
       
       } else if(display_interface == 1) {
@@ -73,7 +74,7 @@ void task_button_white(void *pvParameters) {
           display_interface = 0;
           display_opcao_selecionada = 0;
         }
-        
+
       } else if (display_interface == 3) {
         display_interface = 0;
         display_opcao_selecionada = 0;
