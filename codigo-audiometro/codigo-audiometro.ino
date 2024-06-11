@@ -1,24 +1,15 @@
 #include "SoftwareSerial.h"
 #include "DFRobotDFPlayerMini.h"
 
-#ifndef PIN_MP3_TX
-#define PIN_MP3_TX 17
-#endif
+#include "HardwareSerial.h"
+HardwareSerial hardwareSerial(2);
 
-#ifndef PIN_MP3_RX
-#define PIN_MP3_RX 16
-#endif
-
-#ifndef BUSY_PIN
-#define BUSY_PIN 5
-#endif
+#define PIN_MP3_TX 16
+#define PIN_MP3_RX 17
+#define BUSY_PIN 34
 
 #ifndef CONFIRM_PIN
-#define CONFIRM_PIN 18
-#endif
-
-#ifndef SELECT_PIN
-#define SELECT_PIN 19
+#define CONFIRM_PIN 19
 #endif
 
 SoftwareSerial softwareSerial(PIN_MP3_RX, PIN_MP3_TX);
@@ -44,47 +35,51 @@ void taskButtonState(void* pvParameters) {
 void taskPlayFrequencies(void* pvParameters) {
   uint8_t currentTrack = 1;
 
-  if(df.begin(softwareSerial)) {
-    Serial.println("Connected!");
-    df.volume(0);
-    df.play(1);
-    Serial.print("Playing Track ");
-    Serial.println(currentTrack);
-    for(;;) {
-      vTaskDelay(1000 / portTICK_PERIOD_MS);
-      if(digitalRead(BUSY_PIN) || isButtonPressed) {
-        if(df.readVolume() > 4) perdaAuditiva = 1;
-        df.volume(0);
-        currentTrack += 1;
-        if (currentTrack > 6) {
-          Serial.println("Finished Frequencies.");
-          if (perdaAuditiva) Serial.println("Unfortunately, you have some kind of hearing loss."); 
-          else Serial.println("You're hearing is all good!");
-          vTaskDelete(handlePlayFrequencies);
-        }
-        df.next();
-        Serial.print("Playing Track ");
-        Serial.println(currentTrack);
+  while(!df.begin(softwareSerial)) {
+    Serial.print("player not connect");
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
+
+  Serial.println("Connected!");
+  df.volume(0);
+  df.play(1);
+  Serial.print("Playing Track ");
+  Serial.println(currentTrack);
+
+  for(;;) {
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    if(digitalRead(BUSY_PIN) || isButtonPressed) {
+      if(df.readVolume() > 4) perdaAuditiva = 1;
+      df.volume(0);
+      currentTrack += 1;
+      if (currentTrack > 6) {
+        Serial.println("Finished Frequencies.");
+        if (perdaAuditiva) Serial.println("Unfortunately, you have some kind of hearing loss."); 
+        else Serial.println("You're hearing is all good!");
+        vTaskDelete(handlePlayFrequencies);
       }
-      if (!isButtonPressed) df.volumeUp();
-      Serial.println(df.readVolume());
+      df.next();
+      Serial.print("Playing Track ");
+      Serial.println(currentTrack);
     }
+    if (!isButtonPressed) df.volumeUp();
+    Serial.println(df.readVolume());
   }
-  else {
-    Serial.println("Connection to DFPlayer Mini failed!");
-  }
+
+  Serial.println("Connection to DFPlayer Mini failed!");
+  vTaskDelete(handlePlayFrequencies);
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   softwareSerial.begin(9600);
   
   pinMode(BUSY_PIN, INPUT);
   pinMode(CONFIRM_PIN, INPUT);
   pinMode(SELECT_PIN, INPUT);
 
-  xTaskCreatePinnedToCore(taskPlayFrequencies, "Play Frequencies", 2048, NULL, 1, &handlePlayFrequencies, 0);
-  xTaskCreatePinnedToCore(taskButtonState, "Check Button State", 2048, NULL, 1, NULL, 1);
+  xTaskCreate(taskPlayFrequencies, "Play Frequencies", 2048, NULL, 1, &handlePlayFrequencies);
+  xTaskCreate(taskButtonState, "Check Button State", 2048, NULL, 1, NULL);
 }
 
 void loop() {
