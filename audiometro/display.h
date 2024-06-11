@@ -92,7 +92,7 @@ void exibir_resultado_teste() {
   display.setCursor(0, 0);
   display.setTextColor(WHITE, BLACK);
   
-  if(perda) {
+  if(perdaAuditiva) {
     display.println("Voce possui uma perdaauditiva\n\nProcure um medico");
   } else {
     display.println("Voce nao possui perdaauditiva\n\nTudo certo");
