@@ -102,7 +102,7 @@ void exibir_resultado_teste() {
 void task_display(void *pvParameters) {
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   display_opcao_selecionada = 0;
-  display_interface = 2;
+  display_interface = 0;
 
   for(;;) {
     display.clearDisplay();

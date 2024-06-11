@@ -15,12 +15,11 @@ void task_button_green(void *pvParameters) {
         if(display_opcao_selecionada == 1) {
           display_interface = 2;
           display_opcao_selecionada = 0;
-          xTaskCreate(taskPlayFrequencies, "Play Frequencies", 2048, NULL, 2, &handlePlayFrequencies);
+          xTaskCreatePinnedToCore(taskPlayFrequencies, "Play Frequencies", 2048, NULL, 2, &handlePlayFrequencies, 0);
         
         } else if(display_opcao_selecionada == 2) {
           display_interface = 1;
           display_opcao_selecionada = 0;
-          // TODO Inicializar player
         }
       
       } else if(display_interface == 1) {
@@ -34,10 +33,11 @@ void task_button_green(void *pvParameters) {
       } else if(display_interface == 2) {
         if(display_opcao_selecionada < display_limite_opcao) {
           display_opcao_selecionada ++;
-          isButtonPressed = true;
         } else {
           display_interface = 3;
         }
+        
+        isButtonPressed = true;
       
       } else if (display_interface == 3) {
         display_interface = 0;
@@ -47,7 +47,7 @@ void task_button_green(void *pvParameters) {
     } else if(button_state == LOW && is_button_press) {
       is_button_press = false;
     }
-    vTaskDelay(500 / portTICK_PERIOD_MS);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
   }
 }
 
@@ -86,6 +86,6 @@ void task_button_white(void *pvParameters) {
       is_button_press = false;
     }
 
-    vTaskDelay(500 / portTICK_PERIOD_MS);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
   }
 }
