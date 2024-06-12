@@ -9,7 +9,6 @@ DFRobotDFPlayerMini df;
 TaskHandle_t handlePlayFrequencies;
 SoftwareSerial softwareSerial(PIN_MP3_RX, PIN_MP3_TX);
 
-bool perdaAuditiva;
 bool isButtonPressed;
 
 void taskPlayFrequencies(void* pvParameters) {
@@ -58,6 +57,14 @@ void taskPlayFrequencies(void* pvParameters) {
 
     if(time_now - time_flag1 > 30000 || isButtonPressed) {
 
+      if(!isButtonPressed) {
+        if(display_opcao_selecionada < display_limite_opcao) {
+          display_opcao_selecionada ++;
+        } else {
+          display_interface = 3;
+        }
+      }
+
       // Toca o proximo audio
       df.volume(0);
       currentTrack += 1;
@@ -81,12 +88,12 @@ void taskPlayFrequencies(void* pvParameters) {
     }
 
     // Aumenta o volume
-    if(time_now - time_flag2 > 1000) {
+    if(time_now - time_flag2 > 500) {
       if (!isButtonPressed) df.volumeUp();
       time_flag2 = millis();
     }
 
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(500 / portTICK_PERIOD_MS);
   }
 
   vTaskDelete(handlePlayFrequencies);
