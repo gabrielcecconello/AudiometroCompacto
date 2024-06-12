@@ -30,13 +30,7 @@ void task_button_green(void *pvParameters) {
           display_opcao_selecionada = 0;
         }
       
-      } else if(display_interface == 2) {
-        if(display_opcao_selecionada < display_limite_opcao) {
-          display_opcao_selecionada ++;
-        } else {
-          display_interface = 3;
-        }
-        
+      } else if(display_interface == 2) {       
         isButtonPressed = true;
       
       } else if (display_interface == 3) {
