@@ -16,7 +16,7 @@ void taskPlayFrequencies(void* pvParameters) {
   int time_flag1;
   int time_flag2;
   int time_now;
-  int volume;
+  int volume = 0;
 
   perdaAuditiva = false;
 
@@ -41,16 +41,12 @@ void taskPlayFrequencies(void* pvParameters) {
   for(;;) {
     time_now = millis();
 
-    volume = df.readVolume();
     Serial.print("volume: ");
     Serial.println(volume);
 
-    if(((volume > 4 && currentTrack >= 5)
-      || (volume > 15  && currentTrack > 3)
-      || (volume > 25  && currentTrack == 2))
-      && !isButtonPressed && time_now - time_flag1 >= 2000) perdaAuditiva = true;
-
     if(time_now - time_flag1 > 30000 || isButtonPressed) {
+      if(!isButtonPressed) perdaAuditiva = true;
+
       if(display_opcao_selecionada < display_limite_opcao) {
         display_opcao_selecionada ++;
       } else {
@@ -59,6 +55,7 @@ void taskPlayFrequencies(void* pvParameters) {
       
       // Toca o proximo audio
       df.volume(0);
+      volume = 0;
       currentTrack += 1;
       isButtonPressed = false;
 
@@ -80,7 +77,10 @@ void taskPlayFrequencies(void* pvParameters) {
 
     // Aumenta o volume
     if(time_now - time_flag2 > 500) {
-      if (!isButtonPressed) df.volumeUp();
+      if (!isButtonPressed) {
+        df.volumeUp();
+        volume++;
+      }
       time_flag2 = millis();
     }
 
