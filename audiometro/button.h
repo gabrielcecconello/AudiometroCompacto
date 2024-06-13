@@ -1,5 +1,5 @@
-#define PIN_BUTTON_GREEN 5
-#define PIN_BUTTON_WHITE 19
+#define PIN_BUTTON_GREEN 32
+#define PIN_BUTTON_WHITE 27
 
 void task_button_green(void *pvParameters) {
   int button_state = 0;
